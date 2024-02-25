@@ -1,6 +1,7 @@
 import React from "react";
 import { FiPlus, FiTrash } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export const Kanban = () => {
   return (
@@ -29,9 +30,9 @@ const DEFAULT_TASKS = [
 interface ColumnProps {
   title: string;
   headingColor: string;
-  cards: any[];
+  tasks: any[];
   column: string;
-  setCards: React.Dispatch<React.SetStateAction<any[]>>;
+  setTasks: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const Board = () => {
@@ -42,24 +43,24 @@ const Board = () => {
         title="À faire"
         headingColor="text-[#F25757]"
         column="todo"
-        cards={tasks}
-        setCards={setTasks}
+        tasks={tasks}
+        setTasks={setTasks}
       />
       <Column
         title="En cours"
         headingColor="text-[#FFBA08]"
         column="inprogress"
-        cards={tasks}
-        setCards={setTasks}
+        tasks={tasks}
+        setTasks={setTasks}
       />
       <Column
         title="Terminé"
         headingColor="text-[#8DB580]"
         column="done"
-        cards={tasks}
-        setCards={setTasks}
+        tasks={tasks}
+        setTasks={setTasks}
       />
-      <BurnBarrel setCards={setTasks} />
+      <BurnBarrel setTasks={setTasks} />
     </div>
   );
 };
@@ -67,18 +68,23 @@ const Board = () => {
 const Column = ({
   title,
   headingColor,
-  cards,
+  tasks,
   column,
-  setCards,
+  setTasks,
 }: ColumnProps) => {
   const [active, setActive] = React.useState(false);
-  const filteredCards = cards.filter((card) => card.column === column);
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, task: any) => {
+    e.dataTransfer.setData("taskId", task.id);
+  };
+
+  const filteredTasks = tasks.filter((task) => task.column === column);
   return (
     <div className="w-56 shrink-0">
       <div className="mb-3 flex items-center justify-between">
         <h3 className={`font-medium text-3xl ${headingColor}`}>{title}</h3>
         <span className="rounded text-lg text-neutral-400">
-          {filteredCards.length}
+          {filteredTasks.length}
         </span>
       </div>
       <div
@@ -86,27 +92,30 @@ const Column = ({
           active ? "bg-neutral-300" : "bg-[#f2f2f2]"
         }`}
       >
-        {filteredCards.map((card) => (
-          <Card key={card.id} {...card} />
+        {filteredTasks.map((task) => (
+          <Task key={task.id} {...task} handleDragStart={handleDragStart} />
         ))}
         <DropIndicator beforeId="-1" column={column} />
-        <AddCard column={column} setCards={setCards} />
+        <AddTask column={column} setTasks={setTasks} />
       </div>
     </div>
   );
 };
 
-const Card = ({ title, column, id }: any) => {
+const Task = ({ title, column, id, handleDragStart }: any) => {
   return (
     <>
       <DropIndicator beforeId={id} column={column} />
 
-      <div
+      <motion.div
+        layout
+        layoutId={id}
         draggable="true"
+        onDragStart={(e) => handleDragStart(e, { id, title, column })}
         className="cursor-grab rounded border border-neutral-200 active:cusor-grabbing p-3 bg-white shadow"
       >
         <p>{title}</p>
-      </div>
+      </motion.div>
     </>
   );
 };
@@ -121,11 +130,32 @@ const DropIndicator = ({ beforeId, column }: any) => {
   );
 };
 
-const BurnBarrel = ({ setCards }: any) => {
+const BurnBarrel = ({ setTasks }: any) => {
   const [active, setActive] = React.useState(false);
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setActive(false);
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    const taskId = e.dataTransfer.getData("taskId");
+    console.log(taskId);
+
+    setTasks((prev: any) => prev.filter((c: any) => c.id !== taskId));
+
+    setActive(false);
+  };
 
   return (
     <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDragEnd}
       className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
         active ? "bg-[#F25757]/20 text-red-500" : "bg-[#f2f2f2]"
       } text-gray-500 hover:bg-[#F25757]/20 hover:text-red-500 cursor-pointer`}
@@ -135,26 +165,26 @@ const BurnBarrel = ({ setCards }: any) => {
   );
 };
 
-const AddCard = ({ column, setCards }: any) => {
+const AddTask = ({ column, setTasks }: any) => {
   const [text, setText] = React.useState("");
   const [adding, setAdding] = React.useState(false);
   const handleSubmit = (e: any) => {
     e.preventDefault();
     if (!text.trim().length) return;
-    const newCard = {
+    const newTask = {
       id: Math.random().toString(),
       title: text,
       column,
     };
 
-    setCards((prev: any) => [...prev, newCard]);
+    setTasks((prev: any) => [...prev, newTask]);
     setAdding(false);
   };
 
   return (
     <>
       {adding ? (
-        <form onSubmit={handleSubmit}>
+        <motion.form layout onSubmit={handleSubmit}>
           <textarea
             onChange={(e) => setText(e.target.value)}
             autoFocus
@@ -176,15 +206,16 @@ const AddCard = ({ column, setCards }: any) => {
               <FiPlus />
             </button>
           </div>
-        </form>
+        </motion.form>
       ) : (
-        <button
+        <motion.button
+          layout
           onClick={() => setAdding(true)}
           className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-600"
         >
           <span>Ajouter une tache</span>
           <FiPlus />
-        </button>
+        </motion.button>
       )}
     </>
   );
