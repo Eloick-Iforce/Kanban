@@ -1,30 +1,28 @@
-# React + TypeScript + Vite
+# Kanban Board - React App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a React application that implements a Kanban board for task management.
 
-Currently, two official plugins are available:
+### Features:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Three Kanban columns: **To Do**, **In Progress**, and **Done**.
+- Drag and drop functionality to move tasks between columns.
+- Add new tasks to any column.
+- Delete tasks by dragging them to the "Burn Barrel" column.
+- Dynamic counters display the number of tasks in each column.
+- Animated task transitions using Framer Motion.
 
-## Expanding the ESLint configuration
+### Usage:
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The application runs in the browser at `http://localhost:5173/`. You can:
 
-- Configure the top-level `parserOptions` property like this:
+- **Create new tasks:** Click the "Add Task" button in any column. Enter the task title and click "Add" or press Enter.
+- **Move tasks:** Drag and drop tasks between columns to change their status.
+- **Delete tasks:** Drag a task to the "Burn Barrel" column at the end.
+- **Expand Add Task:** Click the "Add Task" button again to collapse the form.
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+### Dependencies:
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- React
+- Framer Motion
+- React-icons (for Font Awesome and Feather icons)
+- Tailwind CSS
