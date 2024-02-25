@@ -16,15 +16,6 @@ const DEFAULT_TASKS = [
   { id: 1, title: "Faire le ménage", column: "todo" },
   { id: 2, title: "Faire les courses", column: "todo" },
   { id: 3, title: "Faire du sport", column: "todo" },
-
-  //inprogress
-  { id: 4, title: "Faire la cuisine", column: "inprogress" },
-  { id: 5, title: "Faire du sport", column: "inprogress" },
-
-  //done
-  { id: 6, title: "Faire le ménage", column: "done" },
-  { id: 7, title: "Faire les courses", column: "done" },
-  { id: 8, title: "Faire du sport", column: "done" },
 ];
 
 interface ColumnProps {
@@ -78,6 +69,93 @@ const Column = ({
     e.dataTransfer.setData("taskId", task.id);
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    highlightIndicator(e);
+    setActive(true);
+  };
+
+  const highlightIndicator = (e: React.DragEvent<HTMLDivElement>) => {
+    const indicators = getIndicators();
+    clearHighlights(indicators);
+    const el = getNearestIndicator(e, indicators);
+    el.element.style.opacity = 1;
+  };
+
+  const clearHighlights = (els) => {
+    const indicators = els || getIndicators();
+
+    indicators.forEach((i) => {
+      i.style.opacity = "0";
+    });
+  };
+
+  const getIndicators = () => {
+    return Array.from(document.querySelectorAll(`[data-column="${column}"]`));
+  };
+
+  const getNearestIndicator = (e, indicators) => {
+    const DISTANCE_OFFSET = 50;
+
+    const el = indicators.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+
+        const offset = e.clientY - (box.top + DISTANCE_OFFSET);
+
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+        element: indicators[indicators.length - 1],
+      }
+    );
+
+    return el;
+  };
+
+  const handleDragLeave = () => {
+    setActive(false);
+    clearHighlights();
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    setActive(false);
+    clearHighlights();
+
+    const taskId = e.dataTransfer.getData("taskId");
+    const indicators = getIndicators();
+    const { element } = getNearestIndicator(e, indicators);
+
+    const before = element.dataset.before || "-1";
+
+    if (before !== taskId) {
+      let copy = [...tasks];
+      let taskToTransfert = copy.find((c) => c.id === taskId);
+
+      if (!taskToTransfert) return;
+
+      taskToTransfert = { ...taskToTransfert, column };
+
+      copy = copy.filter((c) => c.id !== taskId);
+      const moveToBack = before === "-1";
+
+      if (moveToBack) {
+        copy.push(taskToTransfert);
+      } else {
+        const insertAtIndex = copy.findIndex((el) => el.id === before);
+        if (insertAtIndex === undefined) return;
+
+        copy.splice(insertAtIndex, 0, taskToTransfert);
+      }
+      setTasks(copy);
+    }
+  };
+
   const filteredTasks = tasks.filter((task) => task.column === column);
   return (
     <div className="w-56 shrink-0">
@@ -88,6 +166,9 @@ const Column = ({
         </span>
       </div>
       <div
+        onDrop={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         className={`h-full w-full transition-colors ${
           active ? "bg-neutral-300" : "bg-[#f2f2f2]"
         }`}
