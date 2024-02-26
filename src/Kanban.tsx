@@ -82,10 +82,10 @@ const Column = ({
     el.element.style.opacity = 1;
   };
 
-  const clearHighlights = (els) => {
+  const clearHighlights = (els: any = undefined) => {
     const indicators = els || getIndicators();
 
-    indicators.forEach((i) => {
+    indicators.forEach((i: any) => {
       i.style.opacity = "0";
     });
   };
@@ -94,11 +94,11 @@ const Column = ({
     return Array.from(document.querySelectorAll(`[data-column="${column}"]`));
   };
 
-  const getNearestIndicator = (e, indicators) => {
+  const getNearestIndicator = (e: any, indicators: any) => {
     const DISTANCE_OFFSET = 50;
 
     const el = indicators.reduce(
-      (closest, child) => {
+      (closest: any, child: any) => {
         const box = child.getBoundingClientRect();
 
         const offset = e.clientY - (box.top + DISTANCE_OFFSET);
