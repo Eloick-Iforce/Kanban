@@ -11,6 +11,12 @@ This project is a React application that implements a Kanban board for task mana
 - Dynamic counters display the number of tasks in each column.
 - Animated task transitions using Framer Motion.
 
+### Installation:
+
+1. Clone the repository.
+2. Run `npm install` to install the dependencies.
+3. Run `npm run dev` to start the development server.
+
 ### Usage:
 
 The application runs in the browser at `http://localhost:5173/`. You can:
